@@ -14,7 +14,7 @@
  * @category  Phergie
  * @package   Phergie
  * @author    Phergie Development Team <team@phergie.org>
- * @copyright 2008-2010 Phergie Development Team (http://phergie.org)
+ * @copyright 2008-2011 Phergie Development Team (http://phergie.org)
  * @license   http://phergie.org/license New BSD License
  * @link      http://pear.phergie.org/package/Phergie
  */
@@ -90,9 +90,9 @@ function show_channels(PDO $db)
     // only grab actual channels that start with # ... also pre-lowercase everything.
     // this allows us to 'deal' with variable caps in how the channels were logged.
     $channels = $db->query(
-        "select distinct lower(chan) as c
+        "select distinct lower(location) as c
         from logs
-        where chan like '#%'"
+        where location like '#%'"
     );
     foreach ($channels as $row) {
         $html = utf8specialchars($row['c']);
@@ -131,14 +131,14 @@ function show_days(PDO $db)
     // Query the database to discover all days that are available for this channel:
     $data = array();
     $prepared = $db->prepare(
-        "select distinct date(tstamp) as day
+        "select distinct date(`time`, 'unixepoch') as day
         from logs
-        where lower(chan) = :chan"
+        where lower(location) = :chan"
     );
     $prepared->execute(array(':chan' => $channel));
     foreach ($prepared as $row) {
         list($y, $m, $d) = explode('-', $row['day']);
-        $data[$y][$m][$d] = "{$y}-{$m}-{$d}";
+        $data[$y][(int)$m][(int)$d] = "{$y}-{$m}-{$d}";
     }
 
     // For now, just loop over them all and provide a list:
@@ -221,10 +221,10 @@ function show_log(PDO $db)
 
     // Query the database to get all log lines for this date:
     $prepared = $db->prepare(
-        "select time(tstamp) as t, type, nick, message
+        "select time(`time`, 'unixepoch') as t, type, user as nick, content as message
         from logs
-        where lower(chan) = :chan and date(tstamp) = :day
-        order by tstamp asc"
+        where lower(location) = :chan and date(`time`, 'unixepoch') = :day
+        order by `time` asc"
     );
     $prepared->execute(
         array(
@@ -244,34 +244,34 @@ function show_log(PDO $db)
         
         // Now change the format of the line based upon the type:
         switch ($row['type']) {
-        case 4: // PRIVMSG (A Regular Message)
+        case 'privmsg': // PRIVMSG (A Regular Message)
             echo "[$time] <span style=\"color:#{$color};\">"
                 . "&lt;{$nick}&gt;</span> {$msg}<br />\n";
             break;
-        case 5: // ACTION (emote)
+        case 'action': // ACTION (emote)
             echo "[$time] <span style=\"color:#{$color};\">"
                 . "*{$nick} {$msg}</span><br />\n";
             break;
-        case 1: // JOIN
+        case 'join': // JOIN
             echo "[$time] -> {$nick} joined the room.<br />\n";
             break;
-        case 2: // PART (leaves channel)
+        case 'part': // PART (leaves channel)
             echo "[$time] -> {$nick} left the room: {$msg}<br />\n";
             break;
-        case 3: // QUIT (quits the server)
+        case 'quit': // QUIT (quits the server)
             echo "[$time] -> {$nick} left the server: {$msg}<br />\n";
             break;
-        case 6: // NICK (changes their nickname)
+        case 'nick': // NICK (changes their nickname)
             echo "[$time] -> {$nick} is now known as: {$msg}<br />\n";
             break;
-        case 7: // KICK (booted)
+        case 'kick': // KICK (booted)
             echo "[$time] -> {$nick} boots {$msg} from the room.<br />\n";
             break;
-        case 8: // MODE (changed their mode)
-            $type = 'MODE';
-        case 9: // TOPIC (changed the topic)
-            $type = $type ? $type : 'TOPIC';
-            echo "[$time] -> {$nick}: :{$type}: {$msg}<br />\n";
+        case 'mode': // MODE (changed their mode)
+            $type = 'changed their mode';
+        case 'topic': // TOPIC (changed the topic)
+            $type = $type ? $type : 'changed the topic';
+            echo "[$time] -> {$nick} {$type}: {$msg}<br />\n";
         }
     }
         
