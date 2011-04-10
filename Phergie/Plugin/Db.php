@@ -69,18 +69,20 @@ class Phergie_Plugin_Db extends Phergie_Plugin_Abstract
     {
         // We set the directory to the current path.
         $resource_directory = dirname(__FILE__) . '/' . $directory;
-        if($this->getConfig('dbpath')) {
-                echo "DEBUG: Switching to alternate DB path - $directory\n";
-                if(is_dir($this->getConfig('dbpath'))){
-                        $directory = $this->getConfig('dbpath') . $directory;
-                        if(!is_dir($directory)){
-                           mkdir($directory); // make directory
-                        }
-                } else {
-                        $this->fail('Unable to create Database(s)');
-                }			
+        if ($this->getConfig('dbpath')) {
+            echo "DEBUG: Switching to alternate DB path - $directory\n";
+
+            if (is_dir($this->getConfig('dbpath'))) {
+                $directory = $this->getConfig('dbpath') . $directory;
+
+                if (!is_dir($directory)) {
+                    mkdir($directory); // make directory
+                }
+            } else {
+                $this->fail('Unable to create Database(s)');
+            }
         } else {
-        $directory = $resource_directory;
+            $directory = $resource_directory;
         }
         $this->isResourceDirectory($directory);
         $dbFile = $directory . $dbFile; // Add the directory path
