@@ -93,9 +93,7 @@ class Phergie_Plugin_Db extends Phergie_Plugin_Abstract
             throw new Phergie_Plugin_Exception($e->getMessage());
         }
 
-        if (!is_readable($dbFile)) {
-            $this->createTablesFromSchema($db, $schemaFile);
-        }
+        $this->createTablesFromSchema($db, $schemaFile);
         return $db;
     }
 
@@ -228,8 +226,11 @@ class Phergie_Plugin_Db extends Phergie_Plugin_Abstract
      *
      *  @return bool
      */
-    public function dropTable($name)
+    public function dropTable($db,$name)
     {
+		$sql = 'DROP TABLE :name;'; //not very smart
+		$statement = $db->prepare($sql);
+		return (bool) $statement->execute(array(':name' => $db->quote($name)));
     }
 
     /**
