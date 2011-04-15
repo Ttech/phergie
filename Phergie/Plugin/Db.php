@@ -95,7 +95,12 @@ class Phergie_Plugin_Db extends Phergie_Plugin_Abstract
 
         if (!is_readable($dbFile)) {
             $this->createTablesFromSchema($db, $schemaFile);
-        }
+        } else {
+		if(filesize($dbFile) <= filesize($schemaFile)){
+			$this->createTablesFromSchema($db, $schemaFile);		
+		}	
+	}
+	// why not just call createtables it checks and would create database
         return $db;
     }
 
@@ -228,8 +233,11 @@ class Phergie_Plugin_Db extends Phergie_Plugin_Abstract
      *
      *  @return bool
      */
-    public function dropTable($name)
+    public function dropTable($db,$name)
     {
+		$sql = 'DROP TABLE :name;'; //not very smart
+		$statement = $db->prepare($sql);
+		return (bool) $statement->execute(array(':name' => $db->quote($name)));
     }
 
     /**
