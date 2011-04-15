@@ -93,14 +93,7 @@ class Phergie_Plugin_Db extends Phergie_Plugin_Abstract
             throw new Phergie_Plugin_Exception($e->getMessage());
         }
 
-        if (!is_readable($dbFile)) {
-            $this->createTablesFromSchema($db, $schemaFile);
-        } else {
-		if(filesize($dbFile) <= filesize($schemaFile)){
-			$this->createTablesFromSchema($db, $schemaFile);		
-		}	
-	}
-	// why not just call createtables it checks and would create database
+        $this->createTablesFromSchema($db, $schemaFile);
         return $db;
     }
 
