@@ -14,7 +14,7 @@
  * @category  Phergie
  * @package   Phergie_Tests
  * @author    Phergie Development Team <team@phergie.org>
- * @copyright 2008-2010 Phergie Development Team (http://phergie.org)
+ * @copyright 2008-2011 Phergie Development Team (http://phergie.org)
  * @license   http://phergie.org/license New BSD License
  * @link      http://pear.phergie.org/package/Phergie_Tests
  */
@@ -54,17 +54,11 @@ class Phergie_Plugin_TerryChayTest extends Phergie_Plugin_TestCase
             ->method('getContent')
             ->will($this->returnValue($this->chayism));
 
-        $plugin = $this->getMock('Phergie_Plugin_Http', array('get'));
+        $plugin = $this->requirePlugin('Http');
         $plugin
             ->expects($this->any())
             ->method('get')
             ->will($this->returnValue($response));
-
-        $this->getMockPluginHandler()
-            ->expects($this->any())
-            ->method('getPlugin')
-            ->with('Http')
-            ->will($this->returnValue($plugin));
     }
 
     /**
